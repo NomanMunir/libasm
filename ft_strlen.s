@@ -7,13 +7,13 @@ section .text
 	global ft_strlen
 
 ft_strlen:
-	xor		rax, rax			; Initialize counter to 0
+	xor		rax, rax
 
 .loop:
-	cmp		byte [rdi + rax], 0	; Compare current char with null terminator
-	je		.done				; If null, we're done
-	inc		rax					; Increment counter
-	jmp		.loop				; Continue loop
+	cmp		byte [rdi + rax], 0
+	je		.done
+	inc		rax
+	jmp		.loop
 
 .done:
-	ret							; Return length in rax
+	ret

@@ -10,28 +10,25 @@ section .text
 	extern ft_strcpy
 
 ft_strdup:
-	push	rbx					; Save callee-saved register
-	push	r12					; Save callee-saved register
-	mov		r12, rdi			; Save original string pointer
+	push	rbx
+	push	r12
+	mov		r12, rdi
 
-	; Get string length
-	call	ft_strlen wrt ..plt	; Call ft_strlen (result in rax)
-	inc		rax					; Add 1 for null terminator
+	call	ft_strlen wrt ..plt
+	inc		rax
 
-	; Allocate memory
-	mov		rdi, rax			; Set size argument for malloc
-	call	malloc wrt ..plt	; Call malloc
-	test	rax, rax			; Check if malloc returned NULL
-	jz		.done				; If NULL, return NULL (errno already set by malloc)
+	mov		rdi, rax
+	call	malloc wrt ..plt
+	test	rax, rax
+	jz		.done
 
-	; Copy string
-	mov		rbx, rax			; Save allocated pointer
-	mov		rdi, rax			; dest = allocated memory
-	mov		rsi, r12			; src = original string
-	call	ft_strcpy wrt ..plt	; Copy string
-	mov		rax, rbx			; Return allocated pointer
+	mov		rbx, rax
+	mov		rdi, rax
+	mov		rsi, r12
+	call	ft_strcpy wrt ..plt
+	mov		rax, rbx
 
 .done:
-	pop		r12					; Restore callee-saved register
-	pop		rbx					; Restore callee-saved register
+	pop		r12
+	pop		rbx
 	ret

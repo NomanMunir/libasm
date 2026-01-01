@@ -7,22 +7,22 @@ section .text
 	global ft_strcmp
 
 ft_strcmp:
-	xor		rcx, rcx			; Initialize index to 0
+	xor		rcx, rcx
 
 .loop:
-	movzx	eax, byte [rdi + rcx]	; Load byte from s1 (zero-extend to eax)
-	movzx	edx, byte [rsi + rcx]	; Load byte from s2 (zero-extend to edx)
-	cmp		al, dl				; Compare bytes
-	jne		.diff				; If different, calculate difference
-	test	al, al				; Check if null terminator
-	jz		.equal				; If null, strings are equal
-	inc		rcx					; Increment index
-	jmp		.loop				; Continue loop
+	movzx	eax, byte [rdi + rcx]
+	movzx	edx, byte [rsi + rcx]
+	cmp		al, dl
+	jne		.diff
+	test	al, al
+	jz		.equal
+	inc		rcx
+	jmp		.loop
 
 .diff:
-	sub		eax, edx			; Calculate difference
+	sub		eax, edx
 	ret
 
 .equal:
-	xor		eax, eax			; Return 0 for equal strings
+	xor		eax, eax
 	ret

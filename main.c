@@ -211,3 +211,26 @@ int	main(void)
 // │ r9              │  6th argument                                │
 // │ r10-r15         │  General purpose                             │
 // └─────────────────┴──────────────────────────────────────────────┘
+
+// section .text and global ft_strlen
+// section .text
+// An executable file has different sections (areas):
+
+// ┌─────────────────────────────────────────────────────────┐
+// │  .text section                                          │
+// │  • Contains executable CODE (your functions)            │
+// │  • Read-only, executable                                │
+// │  • This is where ft_strlen lives                        │
+// ├─────────────────────────────────────────────────────────┤
+// │  .data section                                          │
+// │  • Initialized global variables                         │
+// │  • Example: int x = 42;                                 │
+// ├─────────────────────────────────────────────────────────┤
+// │  .bss section                                           │
+// │  • Uninitialized global variables                       │
+// │  • Example: int arr[100];                               │
+// ├─────────────────────────────────────────────────────────┤
+// │  .rodata section                                        │
+// │  • Read-only data (string literals)                     │
+// │  • Example: "Hello, World!"                             │
+// └─────────────────────────────────────────────────────────┘
