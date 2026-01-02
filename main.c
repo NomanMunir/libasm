@@ -174,6 +174,225 @@ void	test_strdup(void)
 	}
 }
 
+void	test_write_big_data(void)
+{
+	printf("\n=== Testing ft_write with Big Data ===\n");
+	
+	// Create a large buffer (1MB)
+	size_t big_size = 1024 * 1024; // 1MB
+	char *big_data = malloc(big_size);
+	if (!big_data)
+	{
+		printf(RED "[KO] " RESET "Failed to allocate memory\n");
+		return;
+	}
+	
+	// Fill with pattern
+	for (size_t i = 0; i < big_size; i++)
+		big_data[i] = 'A' + (i % 26);
+	
+	// Write to temp file
+	int fd = open("/tmp/libasm_write_big.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd >= 0)
+	{
+		ssize_t written = ft_write(fd, big_data, big_size);
+		if (written == (ssize_t)big_size)
+			printf(GREEN "[OK] " RESET "Wrote %zd bytes (1MB) successfully\n", written);
+		else
+			printf(RED "[KO] " RESET "Expected %zu bytes, wrote %zd\n", big_size, written);
+		close(fd);
+	}
+	
+	// Verify written data
+	fd = open("/tmp/libasm_write_big.txt", O_RDONLY);
+	if (fd >= 0)
+	{
+		char *verify = malloc(big_size);
+		ssize_t read_bytes = read(fd, verify, big_size);
+		if (read_bytes == (ssize_t)big_size && memcmp(big_data, verify, big_size) == 0)
+			printf(GREEN "[OK] " RESET "Data integrity verified\n");
+		else
+			printf(RED "[KO] " RESET "Data mismatch after write/read\n");
+		free(verify);
+		close(fd);
+	}
+	
+	unlink("/tmp/libasm_write_big.txt");
+	free(big_data);
+}
+
+void	test_read_big_data(void)
+{
+	printf("\n=== Testing ft_read with Big Data ===\n");
+	
+	// Create test file with 1MB data
+	size_t big_size = 1024 * 1024;
+	char *big_data = malloc(big_size);
+	if (!big_data)
+	{
+		printf(RED "[KO] " RESET "Failed to allocate memory\n");
+		return;
+	}
+	
+	// Fill with pattern
+	for (size_t i = 0; i < big_size; i++)
+		big_data[i] = 'X' + (i % 26);
+	
+	// Write test file
+	int fd = open("/tmp/libasm_read_big.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd >= 0)
+	{
+		write(fd, big_data, big_size);
+		close(fd);
+	}
+	
+	// Read back with ft_read
+	fd = open("/tmp/libasm_read_big.txt", O_RDONLY);
+	if (fd >= 0)
+	{
+		char *read_data = malloc(big_size);
+		ssize_t bytes_read = ft_read(fd, read_data, big_size);
+		
+		if (bytes_read == (ssize_t)big_size)
+			printf(GREEN "[OK] " RESET "Read %zd bytes (1MB) successfully\n", bytes_read);
+		else
+			printf(RED "[KO] " RESET "Expected %zu bytes, read %zd\n", big_size, bytes_read);
+		
+		if (memcmp(big_data, read_data, big_size) == 0)
+			printf(GREEN "[OK] " RESET "Data integrity verified\n");
+		else
+			printf(RED "[KO] " RESET "Data mismatch after write/read\n");
+		
+		free(read_data);
+		close(fd);
+	}
+	
+	unlink("/tmp/libasm_read_big.txt");
+	free(big_data);
+}
+
+void	test_strcpy_big_data(void)
+{
+	printf("\n=== Testing ft_strcpy with Big Data ===\n");
+	
+	// Create a large string (512KB)
+	size_t big_size = 512 * 1024;
+	char *src = malloc(big_size + 1);
+	char *dst = malloc(big_size + 1);
+	if (!src || !dst)
+	{
+		printf(RED "[KO] " RESET "Failed to allocate memory\n");
+		free(src);
+		free(dst);
+		return;
+	}
+	
+	// Fill source with pattern
+	for (size_t i = 0; i < big_size; i++)
+		src[i] = 'B' + (i % 26);
+	src[big_size] = '\0';
+	
+	// Test ft_strcpy
+	char *result = ft_strcpy(dst, src);
+	
+	if (result == dst)
+		printf(GREEN "[OK] " RESET "ft_strcpy returned destination pointer\n");
+	else
+		printf(RED "[KO] " RESET "ft_strcpy did not return destination pointer\n");
+	
+	if (memcmp(src, dst, big_size) == 0 && dst[big_size] == '\0')
+		printf(GREEN "[OK] " RESET "Copied %zu bytes (512KB) with null terminator\n", big_size);
+	else
+		printf(RED "[KO] " RESET "Data mismatch or missing null terminator\n");
+	
+	free(src);
+	free(dst);
+}
+
+void	test_read_write_copy_cycle(void)
+{
+	printf("\n=== Testing Read/Write/Copy Cycle with Big Data ===\n");
+	
+	size_t big_size = 512 * 1024;
+	char *original = malloc(big_size);
+	char *intermediate = malloc(big_size);
+	char *final = malloc(big_size);
+	
+	if (!original || !intermediate || !final)
+	{
+		printf(RED "[KO] " RESET "Failed to allocate memory\n");
+		free(original);
+		free(intermediate);
+		free(final);
+		return;
+	}
+	
+	// Fill original with pattern
+	for (size_t i = 0; i < big_size; i++)
+		original[i] = 'C' + (i % 26);
+	
+	// Step 1: Write original to file
+	int fd = open("/tmp/libasm_cycle_1.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	ssize_t written = 0;
+	if (fd >= 0)
+	{
+		written = ft_write(fd, original, big_size);
+		close(fd);
+	}
+	
+	// Step 2: Read from file into intermediate
+	fd = open("/tmp/libasm_cycle_1.txt", O_RDONLY);
+	ssize_t read1 = 0;
+	if (fd >= 0)
+	{
+		read1 = ft_read(fd, intermediate, big_size);
+		close(fd);
+	}
+	
+	// Step 3: Copy intermediate to final
+	memcpy(final, intermediate, big_size);
+	
+	// Step 4: Write final to another file
+	fd = open("/tmp/libasm_cycle_2.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	ssize_t written2 = 0;
+	if (fd >= 0)
+	{
+		written2 = ft_write(fd, final, big_size);
+		close(fd);
+	}
+	
+	// Step 5: Read back and compare
+	fd = open("/tmp/libasm_cycle_2.txt", O_RDONLY);
+	char *verify = malloc(big_size);
+	ssize_t read2 = 0;
+	if (fd >= 0)
+	{
+		read2 = ft_read(fd, verify, big_size);
+		close(fd);
+	}
+	
+	// Verify all steps
+	if (written == (ssize_t)big_size && read1 == (ssize_t)big_size && 
+	    written2 == (ssize_t)big_size && read2 == (ssize_t)big_size)
+		printf(GREEN "[OK] " RESET "All read/write operations completed successfully\n");
+	else
+		printf(RED "[KO] " RESET "Some read/write operations failed\n");
+	
+	if (memcmp(original, intermediate, big_size) == 0 &&
+	    memcmp(intermediate, final, big_size) == 0 &&
+	    memcmp(final, verify, big_size) == 0)
+		printf(GREEN "[OK] " RESET "Data integrity maintained through full cycle\n");
+	else
+		printf(RED "[KO] " RESET "Data mismatch in read/write/copy cycle\n");
+	
+	unlink("/tmp/libasm_cycle_1.txt");
+	unlink("/tmp/libasm_cycle_2.txt");
+	free(original);
+	free(intermediate);
+	free(final);
+	free(verify);
+}
+
 int	main(void)
 {
 	printf("====================================\n");
@@ -186,6 +405,15 @@ int	main(void)
 	test_write();
 	test_read();
 	test_strdup();
+	
+	printf("\n====================================\n");
+	printf("    BIG DATA TESTS\n");
+	printf("====================================\n");
+	
+	test_write_big_data();
+	test_read_big_data();
+	test_strcpy_big_data();
+	test_read_write_copy_cycle();
 	
 	printf("\n====================================\n");
 	printf("       TESTS COMPLETE\n");
